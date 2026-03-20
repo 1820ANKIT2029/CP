@@ -951,7 +951,7 @@ public:
 	}
 };
 
-class _2134 {
+class _2134 { // HLD, max Segment Tree
 	public:
 	int n, q;
 	vector<vector<int>> AL;
