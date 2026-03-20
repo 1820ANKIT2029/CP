@@ -114,6 +114,10 @@ int main() {
     - Heavy Edge: A heavy edge connects a node to its heavy child.
     - Light Edge: A light edge connects a node to any of its light children.
     - Heavy Path: A maximal path consisting only of heavy edges.
+
+    Time Complexity: O(log^2(n)) per query
+
+    reading: https://codeforces.com/blog/entry/81317
 */
 
 const int MAXN = 200005;
@@ -122,57 +126,57 @@ vector<int> adj[MAXN];
 
 int parent[MAXN], depth[MAXN], heavy[MAXN];
 int head[MAXN], pos[MAXN], subtree[MAXN];
-int cur_pos;
+int timer;
 int n;
 
 vector<int> baseArray; // flattened tree
 SegmentTree seg;       // assume implemented
 
 // ---------- DFS: find heavy child ----------
-int dfs(int v, int p) {
-    parent[v] = p;
-    subtree[v] = 1;
+int dfs(int u, int p) {
+    parent[u] = p;
+    subtree[u] = 1;
     int max_size = 0;
-    heavy[v] = -1;
+    heavy[u] = -1;
 
-    for (int to : adj[v]) {
-        if (to == p) continue;
+    for (int v : adj[u]) {
+        if (v == p) continue;
 
-        depth[to] = depth[v] + 1;
-        int child_size = dfs(to, v);
-        subtree[v] += child_size;
+        depth[v] = depth[u] + 1;
+        int child_size = dfs(v, u);
+        subtree[u] += child_size;
 
         if (child_size > max_size) {
             max_size = child_size;
-            heavy[v] = to;
+            heavy[u] = v;
         }
     }
-    return subtree[v];
+    return subtree[u];
 }
 
 // ---------- Decompose ----------
-void decompose(int v, int h, vector<int>& values) {
-    head[v] = h;
-    pos[v] = cur_pos++;
-    baseArray[pos[v]] = values[v];
+void decompose(int u, int h, vector<int>& values) {
+    head[u] = h;
+    pos[u] = timer++;
+    baseArray[pos[u]] = values[u];
 
     // heavy edge first
-    if (heavy[v] != -1)
-        decompose(heavy[v], h, values);
+    if (heavy[u] != -1)
+        decompose(heavy[u], h, values);
 
     // light edges
-    for (int to : adj[v]) {
-        if (to == parent[v] || to == heavy[v]) continue;
-        decompose(to, to, values);
+    for (int v : adj[u]) {
+        if (v == parent[u] || v == heavy[u]) continue;
+        decompose(v, v, values);
     }
 }
 
 // ---------- Build HLD ----------
 void build_hld(int root, vector<int>& values) {
-    cur_pos = 0;
+    timer = 0;
     baseArray.assign(n, 0);
-
     depth[root] = 0;
+    
     dfs(root, 0);
     decompose(root, root, values);
 
