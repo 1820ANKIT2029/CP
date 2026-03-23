@@ -11,7 +11,7 @@ typedef pair<ll, int> pli;
 typedef pair<ll, ll> pll;
 typedef pair<int, pii> pipii;
 
-class _1192 {
+class _1192 { // #forests, #connectedComponents
 	public:
 	int n, m;
 	vector<string> grid;
@@ -189,7 +189,7 @@ class _1193 { // can use BFS or Dijsktra or A*
 	}
 };
 
-class _1666 {
+class _1666 { // connected components
 	public:
 	int n, m;
 	vector<vector<int>> AL;
@@ -234,7 +234,7 @@ class _1666 {
 	}
 };
 
-class _1667 {
+class _1667 { // Shortest path in unweighted graph (BFS) + path print
 	public:
 	int n, m;
 	vector<vector<int>> AL;
@@ -290,7 +290,7 @@ class _1667 {
 	}
 };
 
-class _1668 {
+class _1668 { // Bipartite Check (BFS or DFS)
 	public:
 	int n, m;
 	vector<vector<int>> AL;
@@ -339,7 +339,7 @@ class _1668 {
 	}
 };
 
-class _1669 {
+class _1669 { // back edge (dfs)
 	public:
 	int n, m;
 	vector<vector<int>> AL;
@@ -400,7 +400,7 @@ class _1669 {
 	}
 };
 
-class _1194 {
+class _1194 { // Multi-source BFS
 	public:
 	int n, m;
 	vector<string> grid;
