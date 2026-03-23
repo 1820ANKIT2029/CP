@@ -577,7 +577,7 @@ class _1672 { // Floyd-Warshall Algorithm (APSP)
 	}
 };
 
-class _1673 {
+class _1673 { // Bellman-Ford Algorithm (SSSP with negative weight) + dfs
 	public:
 	int n, m;
 	vector<vector<pli>> AL;
@@ -598,7 +598,7 @@ class _1673 {
 		return ans;
 	}
 	
-	void solve() {
+	void solve() { 
 		cin >> n >> m;
 		AL.assign(n, vector<pli>());
 		int a, b;
@@ -654,7 +654,7 @@ class _1673 {
 	
 };
 
-class _1195 {
+class _1195 { // two Dijkstra used: one normal and second with condition
 	public:
 	int n, m;
 	vector<vector<pli>> AL;
@@ -705,7 +705,7 @@ class _1195 {
 	}
 };
 
-class _1197 {
+class _1197 { // Bellman-Ford Algorithm (SSSP with negative weight)
 	public:
 	int n, m;
 	vector<vector<pli>> AL;
@@ -725,7 +725,7 @@ class _1197 {
 		while(path.back() != path[0]) path.pop_back();
 	}
 	
-	void components(int u) {
+	void components(int u) { 
 		p[u] = 0;
 		for(auto &[w, v]: AL[u]) {
 			if(p[v] == -1) components(v);
