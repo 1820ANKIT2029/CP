@@ -988,6 +988,93 @@ class _2134 { // HLD, max Segment Tree
 	}
 };
 
+class _1139 { // DSU on Tree (SACK)
+	public:
+	int n;
+	vector<vector<int>> AL;
+	vector<int> color, heavy, subtree, ans;
+	unordered_map<int, int> cnt;
+	int distinct;
+	
+	void dfs(int u, int p) {
+		subtree[u] = 1;
+		heavy[u] = -1;
+		int maxsize = 0;
+		
+		for(int v: AL[u]) {
+			if(v == p) continue;
+			
+			dfs(v, u);
+			subtree[u] += subtree[v];
+			
+			if(subtree[v] > maxsize) {
+				maxsize = subtree[v];
+				heavy[u] = v;
+			}
+		}
+	}
+	
+	void add_subtree(int u, int p, int val) {
+		cnt[color[u]] += val;
+		
+		if (cnt[color[u]] == 1 && val == 1) distinct++;
+		if (cnt[color[u]] == 0 && val == -1) distinct--;
+		
+		for(int v: AL[u]) {
+			if(v == p) continue;
+			add_subtree(v, u, val);
+		}
+	}
+	
+	void dfs_sack(int u, int p, bool keep) {
+		for(int v: AL[u]) {
+			if(v == p || v == heavy[u]) continue;
+			dfs_sack(v, u, false);
+		}
+		
+		if(heavy[u] != -1) dfs_sack(heavy[u], u, true);
+		
+		for(int v: AL[u]){
+			if(v == p || v == heavy[u]) continue;
+			add_subtree(v, u, 1);
+		}
+		
+		cnt[color[u]]++;
+		if (cnt[color[u]] == 1) distinct++;
+		
+		ans[u] = distinct;
+		
+		if(!keep) add_subtree(u, p, -1);
+	}
+	
+	void solve() {
+		FAST_IO;
+		cin >> n;
+		AL.assign(n+1, vector<int>());
+		color.resize(n+1);
+		
+		for(int i=1; i<=n; i++) cin >> color[i];
+		int a, b;
+		for(int i=1; i<n; i++) {
+			cin >> a >> b;
+			AL[a].push_back(b);
+			AL[b].push_back(a);
+		}
+		
+		heavy.resize(n+1);
+		subtree.resize(n+1);
+		dfs(1, 0);
+		
+		ans.resize(n+1);
+		distinct = 0;
+		dfs_sack(1, 0, true);
+		
+		for(int i=1; i<=n; i++) cout << ans[i] << " ";
+		cout << endl;
+	}
+};
+
+
 /* templete
 class _QuesNum {
 	public:
