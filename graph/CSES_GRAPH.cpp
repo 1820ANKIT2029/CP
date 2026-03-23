@@ -506,7 +506,7 @@ class _1194 { // Multi-source BFS
 	}
 };
 
-class _1671 {
+class _1671 { // Dijkstra (SSSP)
 	public:
 	int n, m;
 	vector<vector<pli>> AL;
@@ -549,7 +549,7 @@ class _1671 {
 	}
 };
 
-class _1672 {
+class _1672 { // Floyd-Warshall Algorithm (APSP)
 	public:
 	void solve() {
 		int n, m, q;
