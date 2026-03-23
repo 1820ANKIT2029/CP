@@ -230,7 +230,31 @@ int main() {
 }
 
 /*
-    DSU on Tree (Sack)
+==================== DSU ON TREE (SACK TECHNIQUE) ====================
+
+Goal:
+For each node u, compute some function over its subtree efficiently
+(e.g., number of distinct colors, frequency counts, etc.)
+
+Core Idea (WHY IT WORKS):
+- Naive: recompute subtree data for every node → O(N^2)
+- Optimization: reuse computation using "small-to-large merging"
+
+Key Observations:
+1. Each node has one "heavy child" = child with largest subtree
+2. Always KEEP data of heavy child
+3. MERGE smaller (light) subtrees into heavy one
+4. If we discard light subtree data after use, each node is processed ~logN times
+
+Time Complexity:
+O(N log N)
+
+When to Use:
+- Subtree queries
+- Frequency/counting problems
+- Static trees (no updates)
+
+=====================================================================
 */
 
 const int MAXN = 200005;
@@ -238,75 +262,74 @@ const int MAXN = 200005;
 vector<int> adj[MAXN];
 int color[MAXN];
 
-int subtree[MAXN];
-int heavy[MAXN];
-int ans[MAXN];
+int subtree[MAXN];    // subtree size
+int heavy[MAXN];      // heavy child
+int ans[MAXN];        // answer for each node
 
-int cnt[MAXN];      // frequency of colors
-int distinct = 0;   // current distinct count
+unordered_map<int, int> cnt;      // frequency of colors
+int distinct = 0;                 // current distinct count
 int n;
 
 // ---------- DFS to find heavy child ----------
-int dfs(int v, int p) {
-    subtree[v] = 1;
-    heavy[v] = -1;
+void dfs(int u, int p) {
+    subtree[u] = 1;
+    heavy[u] = -1;
     int max_size = 0;
 
-    for (int to : adj[v]) {
-        if (to == p) continue;
+    for (int v : adj[u]) {
+        if (v == p) continue;
 
-        int sz = dfs(to, v);
-        subtree[v] += sz;
+        dfs(v, u);
+        subtree[u] += subtree[v];
 
-        if (sz > max_size) {
-            max_size = sz;
-            heavy[v] = to;
+        if (subtree[v] > max_size) {
+            max_size = subtree[v];
+            heavy[u] = v;
         }
     }
-    return subtree[v];
 }
 
 // ---------- Add/remove subtree ----------
-void add_subtree(int v, int p, int val) {
-    cnt[color[v]] += val;
+void add_subtree(int u, int p, int val) {
+    cnt[color[u]] += val;
 
-    if (cnt[color[v]] == 1 && val == 1) distinct++;
-    if (cnt[color[v]] == 0 && val == -1) distinct--;
+    if (cnt[color[u]] == 1 && val == 1) distinct++;
+    if (cnt[color[u]] == 0 && val == -1) distinct--;
 
-    for (int to : adj[v]) {
-        if (to == p) continue;
-        add_subtree(to, v, val);
+    for (int v : adj[u]) {
+        if (v == p) continue;
+        add_subtree(v, u, val);
     }
 }
 
 // ---------- DSU on Tree ----------
-void dfs_sack(int v, int p, bool keep) {
+void dfs_sack(int u, int p, bool keep) {
     // 1. process light children
-    for (int to : adj[v]) {
-        if (to == p || to == heavy[v]) continue;
-        dfs_sack(to, v, false);
+    for (int v : adj[u]) {
+        if (v == p || v == heavy[u]) continue;
+        dfs_sack(v, u, false);
     }
 
     // 2. process heavy child
-    if (heavy[v] != -1)
+    if (heavy[u] != -1)
         dfs_sack(heavy[v], v, true);
 
     // 3. merge light children into heavy data
-    for (int to : adj[v]) {
-        if (to == p || to == heavy[v]) continue;
-        add_subtree(to, v, +1);
+    for (int v : adj[u]) {
+        if (v == p || v == heavy[u]) continue;
+        add_subtree(v, u, +1);
     }
 
     // 4. add current node
-    cnt[color[v]]++;
-    if (cnt[color[v]] == 1) distinct++;
+    cnt[color[u]]++;
+    if (cnt[color[u]] == 1) distinct++;
 
     // 5. answer for this node
-    ans[v] = distinct;
+    ans[u] = distinct;
 
     // 6. cleanup if not keeping
     if (!keep) {
-        add_subtree(v, p, -1);
+        add_subtree(u, p, -1);
         distinct = 0;
     }
 }
