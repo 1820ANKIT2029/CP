@@ -427,81 +427,96 @@ int main() {
 }
 
 /*
-    Centroid Decomposition
+==================== CENTROID DECOMPOSITION ====================
 
-    Centroid: A node whose removal splits the tree into components each of size ≤ N/2.
-    Height of centroid tree = O(log N)
+Goal:
+Break tree into smaller balanced components using centroids.
 
-    It recursively:
-        1. finds centroid
-        2. marks it as removed
-        3. decomposes remaining components
-    This builds a centroid tree.
+Key Idea:
+- A centroid splits tree such that each component ≤ N/2
+- Recursively build centroid tree
+- Solve queries using centroid as "bridge"
+
+Complexity:
+O(N log N)
+
+Use Cases:
+- Distance queries (pairs with distance K)
+- Closest colored node
+- Path-based constraints
+
+================================================================
 */
 
-const int MAXN = 200005;
+const int N = 200005;
 
-vector<int> adj[MAXN];
-bool removed[MAXN];
-int subtree[MAXN];
-int parentCentroid[MAXN];
+vector<int> AL[N];
+bool removed[N];   // marks centroid as removed
+int subtree[N];         // subtree size
 
-int n;
-
-// ---------- compute subtree sizes ----------
-int dfs_size(int v, int p) {
-    subtree[v] = 1;
-
-    for (int to : adj[v]) {
-        if (to == p || removed[to]) continue;
-        subtree[v] += dfs_size(to, v);
+void dfs(int u, int p) {
+    subtree[u] = 1;
+    for (int v : AL[u]) {
+        if (v == p || removed[v]) continue;
+        dfs(v, u);
+        subtree[u] += subtree[v];
     }
-
-    return subtree[v];
 }
 
-// ---------- find centroid ----------
-int dfs_centroid(int v, int p, int sz) {
-    for (int to : adj[v]) {
-        if (to == p || removed[to]) continue;
-
-        if (subtree[to] > sz / 2)
-            return dfs_centroid(to, v, sz);
+// find centroid
+int get_centroid(int u, int p, int total) {
+    for (int v : AL[u]) {
+        if (v == p || removed[v]) continue;
+        if (subtree[v] > total / 2)
+            return get_centroid(v, u, total);
     }
-
-    return v;
+    return u;
 }
 
-// ---------- build centroid tree ----------
-void build_centroid(int v, int p) {
-    int sz = dfs_size(v, -1);
-    int centroid = dfs_centroid(v, -1, sz);
+/*
+process centroid
+Customize this function based on problem
 
-    parentCentroid[centroid] = p;
-    removed[centroid] = true;
+Example placeholder:
+- Collect distances
+- Use map/vector to count answers
+*/
+void process(int centroid) {
+    // TODO: problem-specific logic
+}
 
-    for (int to : adj[centroid]) {
-        if (!removed[to]) {
-            build_centroid(to, centroid);
+// build centroid tree
+void build(int u, int p) {
+    dfs(u, -1);
+
+    int c = get_centroid(u, -1, sz[u]);
+
+    process(c);
+
+    removed[c] = true;
+
+    for (int v : g[c]) {
+        if (!removed[v]) {
+            build(v, c);
         }
     }
 }
 
-// ---------- MAIN ----------
 int main() {
     ios::sync_with_stdio(false);
-    cin.tie(nullptr);
+    cin.tie(NULL);
 
+    int n;
     cin >> n;
 
-    for (int i = 0; i < n-1; i++) {
+    for (int i = 1; i < n; i++) {
         int u, v;
         cin >> u >> v;
-        adj[u].push_back(v);
-        adj[v].push_back(u);
+        g[u].push_back(v);
+        g[v].push_back(u);
     }
 
-    build_centroid(1, 0);
+    build(1, -1);
 
-    // parentCentroid[] now stores centroid tree
+    return 0;
 }
