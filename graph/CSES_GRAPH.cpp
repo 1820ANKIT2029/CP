@@ -800,7 +800,7 @@ class _1197 { // Bellman-Ford Algorithm (SSSP with negative weight)
 	}
 };
 
-class _1196_ {
+class _1196_ { // k shortest path: modified Dijkstra with multiset for each node to track k shortest path  
 	public:
 	int n, m, k;
 	vector<vector<pli>> AL;
@@ -917,7 +917,7 @@ class _1196 {
 	}
 };
 
-class _1678 {
+class _1678 { 
 	public:
 	int n, m;
 	vector<vector<int>> AL;
@@ -983,7 +983,7 @@ class _1678 {
 	}
 };
 
-class _1679 {
+class _1679 { // topological sort
 	public:
 	int n, m;
 	vector<vector<int>> AL;
@@ -1035,7 +1035,7 @@ class _1679 {
 	}
 };
 
-class _1680 {
+class _1680 { // dynamic programming in a directed acyclic graph
 	public:
 	int n, m;
 	vector<vector<int>> AL;
@@ -1089,7 +1089,7 @@ class _1680 {
 	}
 };
 
-class _1681 {
+class _1681 { // count number of path (DAG) with dp
 	public:
 	const ll MOD = 1e9 + 7;
 	int n, m;
@@ -1126,7 +1126,7 @@ class _1681 {
 	}
 };
 
-class _1202 {
+class _1202 { // Dijkstra with Dp
 	public:
 	const ll MOD = 1e9 + 7;
 	int n, m;
@@ -1181,7 +1181,7 @@ class _1202 {
 	}
 };
 
-class _1750 {
+class _1750 { // Kth ancestor (binary lifting)
 	public:
 	int n, q;
 	vector<int> p;
