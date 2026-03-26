@@ -1215,6 +1215,168 @@ class _1750 { // Kth ancestor (binary lifting)
 	}
 };
 
+class _1675 { // minimum spanning tree
+	public:
+	int n, m;
+	vector<vector<pli>> AL;
+	vector<int> taken;
+	priority_queue<pli, vector<pli>, greater<pli>> pq;
+	
+	void process(int u) { 
+		taken[u] = 1;
+		for (auto &[w, v] : AL[u])
+			if (!taken[v])
+				pq.emplace(w, v);
+	}
+	
+	void solve() {
+		FAST_IO;
+		cin >> n >> m;
+		AL.assign(n, vector<pli>());
+		int a, b; ll c;
+		for(int i=0; i<m; i++) {
+			cin >> a >> b >> c;
+			AL[a-1].emplace_back(c, b-1);
+			AL[b-1].emplace_back(c, a-1);
+		}
+		
+		taken.assign(n, 0);
+		process(0);
+		
+		ll mst_cost = 0;
+		int num_taken = 0;
+		while (!pq.empty()) {
+			auto [w, u] = pq.top(); pq.pop();
+			if(taken[u]) continue;
+			mst_cost += w;    
+			process(u); 
+			++num_taken; 
+			if (num_taken == n-1) break;
+		}
+		
+		if(num_taken == n-1) cout << mst_cost << endl;
+		else cout << "IMPOSSIBLE\n";
+	}
+};
+
+class UnionFind{
+private:
+    vector<int> p, rank, setSize; // vi p is the key part
+    int numSets;
+	int maxSets;
+
+public:
+    UnionFind(int N){
+        p.assign(N, 0);
+        for (int i = 0; i < N; ++i)
+            p[i] = i;
+        rank.assign(N, 0);
+        setSize.assign(N, 1);
+        numSets = N;
+		maxSets = 1;
+    }
+
+    int findSet(int i) { 
+       return (p[i] == i) ? i : (p[i] = findSet(p[i])); 
+    }
+
+    bool isSameSet(int i, int j) { 
+       return findSet(i) == findSet(j); 
+    }
+
+    int numDisjointSets() { 
+       return numSets; 
+    }
+	
+	int maxSetSize() { 
+       return maxSets; 
+    }
+
+    int sizeOfSet(int i) {
+       return setSize[findSet(i)]; 
+    }
+
+    void unionSet(int i, int j){
+        if (isSameSet(i, j)) return;
+        int x = findSet(i), y = findSet(j);
+        if (rank[x] > rank[y])
+            swap(x, y);
+        p[x] = y;
+        if (rank[x] == rank[y])
+            ++rank[y];
+        setSize[y] += setSize[x];
+		maxSets = max(maxSets, max(setSize[x], setSize[y]));
+        --numSets;
+    }
+};
+
+class _1676 { // #Components, maxComponenetSize on each edge added
+	public:
+	int n, m;
+	
+	void solve() {
+		FAST_IO;
+		cin >> n >> m;
+		int a, b;
+		
+		UnionFind uf(n);
+		
+		for(int i=0; i<m; i++) {
+			cin >> a >> b;
+			uf.unionSet(a-1, b-1);
+			cout << uf.numDisjointSets() << " " << uf.maxSetSize() << endl;
+		}
+	}
+};
+
+class _1683 { // SCC in directed graph
+	public:
+	int n, m, numSCC;
+	vector<vector<int>> AL, AL_T;
+	vector<int> dfs_num, S, ans;
+	
+	void Kosaraju(int u, int pass) { // pass = 1 (original), 2 (transpose)
+		if(pass == 2) ans[u] = numSCC;
+		dfs_num[u] = 1;
+		vector<int> &neighbor = (pass == 1) ? AL[u] : AL_T[u]; 
+		for (int v: neighbor)
+			if (dfs_num[v] == 0)
+				Kosaraju(v, pass);
+		S.push_back(u);
+	}
+	
+	void solve() {
+		FAST_IO;
+		cin >> n >> m;
+		AL.assign(n, vector<int>());
+		AL_T.assign(n, vector<int>());
+		
+		int a, b;
+		for(int i=0; i<m; i++) {
+			cin >> a >> b;
+			AL[a-1].push_back(b-1);
+			AL_T[b-1].push_back(a-1);
+		}
+		
+		S.clear();
+		dfs_num.assign(n, 0);
+		for (int u = 0; u < n; ++u) 
+			if (dfs_num[u] == 0)
+				Kosaraju(u, 1);
+		
+		numSCC = 0;
+		dfs_num.assign(n, 0); ans.assign(n, -1);
+		for (int i = n-1; i >= 0; --i)
+			if (dfs_num[S[i]] == 0)
+				++numSCC, Kosaraju(S[i], 2);
+
+		
+		cout << numSCC << endl;
+		for(int i=0; i<n; i++) cout << ans[i] << " ";
+		cout << endl;
+	}
+};
+
 /* templete
 class _QuesNum {
 	public:
