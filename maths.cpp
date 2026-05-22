@@ -109,19 +109,18 @@ bool isPrime(long long n) {
 }
 
 // global variable for sieve
-long long sieve_size;
+long long sieve_size = 10000001;
 bitset<10000010> bs;                     // 10^7 limit
-vector<long long> prime;
+vector<long long> primes;
 
-void sieve(long long upperbound) {
-    sieve_size = upperbound + 1;
+void sieve() {
     bs.set();
     bs[0] = bs[1] = 0;
 
     for(long long i=2; i<sieve_size; i++) {
         if(bs[i]) {
             for(long long j=i*i; j<sieve_size; j+=i) bs[j] = 0;
-            prime.push_back(i);
+            primes.push_back(i);
         }
     }
 }
@@ -130,20 +129,20 @@ void sieve(long long upperbound) {
 bool isPrime(long long n) {
     if(n < sieve_size) return bs[n];
 
-    int m = prime.size();
-    for(int i=0; i<m && (prime[i]*prime[i] <= n); i++)
-        if(n % prime[i] == 0)
+    int m = primes.size();
+    for(int i=0; i<m && (primes[i]*primes[i] <= n); i++)
+        if(n % primes[i] == 0)
             return false;
     return true;
 }
 
 vector<long long> primeFactor(long long n) {
     vector<long long> factors;
-    int m = prime.size();
-    for(int i=0; i<m && (prime[i]*prime[i] <= n); i++) {
-        while(n % prime[i] == 0) {
-            n /= prime[i];
-            factors.push_back(prime[i]);
+    int m = primes.size();
+    for(int i=0; i<m && (primes[i]*primes[i] <= n); i++) {
+        while(n % primes[i] == 0) {
+            n /= primes[i];
+            factors.push_back(primes[i]);
         }
     }
 
@@ -152,16 +151,58 @@ vector<long long> primeFactor(long long n) {
 }
 
 long long CountDivisors(long long n) {
-		int m = prime.size();
-		long long ans = 1, cnt;
-		for(int i=0; i<m && (prime[i]*prime[i] <= n); i++) {
-			cnt = 0;
-			while(n % prime[i] == 0) {
-				n /= prime[i]; cnt++;
-			}
-			ans *= (cnt + 1);
-		}
+    int m = primes.size();
+    long long ans = 1, cnt;
+    for(int i=0; i<m && (primes[i]*primes[i] <= n); i++) {
+        cnt = 0;
+        while(n % primes[i] == 0) {
+            n /= primes[i]; cnt++;
+        }
+        ans *= (cnt + 1);
+    }
 
-		if(n != 1) ans *= 2;
-		return ans;
-	}
+    if(n != 1) ans *= 2;
+    return ans;
+}
+
+/*
+    Segmented Sieve
+    Q: number of prime in [L, R], R < 10^12 , (R-L)<10^6)
+
+    sol:
+    step1: Generate all base primes up to sqrt(R) using a standard sieve. 
+    step2: Create a boolean array of size R - L + 1 (representing the range).
+    step3: Use the base primes to cross out their multiples specifically within the [L, R] window.
+
+    space: O(R^0.5 + (R-L))
+    time: O((R-L)lnlnR)
+*/
+
+// Returns the number of primes in the range [L, R]
+long long count_primes_in_range(long long L, long long R) {
+    if (R < 2) return 0;
+    long long limit = sqrt(R); sieve()
+    vector<char> is_prime(R - L + 1, true);
+
+    if (L == 1) {
+        is_prime[0] = false; 
+    }
+
+    for (long long p : primes) {
+        long long start = (L + p - 1) / p * p;
+        start = max(start, p * p);
+        for (long long j = start; j <= R; j += p) {
+            is_prime[j - L] = false;
+        }
+    }
+
+    long long prime_count = 0;
+    for (long long i = 0; i <= R - L; ++i) {
+        if (is_prime[i]) {
+            prime_count++;
+        }
+    }
+
+    return prime_count;
+}
+
