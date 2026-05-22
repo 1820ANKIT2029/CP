@@ -58,6 +58,21 @@ long long nCr(int n, int r){
     return (nume * power(deno, MOD-2)) % MOD;
 }
 
+long long nPr(int n, int r) {
+    /*
+    nPr = n!/(n-r)!
+    A = n!
+    B = (n-r)!
+    nPr = (A / B) % MOD
+        = (A * B^-1) % MOD
+        = (A * B^(MOD - 2)) % MOD
+    */
+    long long nume = fact(n);
+    long long deno = fact(n-r);
+
+    return (nume * power(deno, MOD-2)) % MOD;
+}
+
 long long modInverse(long long n) {
     return power(n, MOD - 2);
 }
