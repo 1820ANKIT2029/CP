@@ -67,10 +67,10 @@ long long modInverse(long long n) {
     a*x + b*y = gcd(a, b);
     a*s + b*t = gcd(a, b);
 */
-int extEuclid(int a, int b, int &x, int &y) {      // pass x and y by ref
-    int xx = y = 0;
-    int yy = x = 1;
-    int q, t;
+long long extEuclid(long long a, long long b, long long &x, long long &y) {      // pass x and y by ref
+    long long xx = y = 0;
+    long long yy = x = 1;
+    long long q, t;
     while (b) {                                    // repeats until b == 0
         q = a / b;
         t = b; b = a%b; a = t;                     // r
@@ -80,6 +80,33 @@ int extEuclid(int a, int b, int &x, int &y) {      // pass x and y by ref
     return a;                                      // returns gcd(a, b)
 }
 
+long long modInverse(long long A, long long M) {
+    long long x, y;
+    extEuclid(A, M, x, y);
+    return (x % M + M) % M;
+}
+
+// Chinese Remainder Theorem
+// Returns x such that x = a[i] (mod m[i]) for all i
+long long CRT(const vector<long long>& a, const vector<long long>& m) {
+    long long M = 1;
+    for (long long mod : m) {
+        M *= mod;
+    }
+
+    long long x = 0;
+    for (size_t i = 0; i < a.size(); ++i) {
+        long long M_i = M / m[i];
+        long long y_i = modInverse(M_i, m[i]);
+        
+        // Use (__int128) to prevent overflow if M is near 10^18
+        long long term = (M_i * y_i) % M;
+        term = (term * a[i]) % M;
+        x = (x + term) % M;
+    }
+
+    return (x % M + M) % M;
+}
 
 /*
     Prime Number
