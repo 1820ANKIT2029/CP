@@ -7,6 +7,8 @@ g++ Q.cpp && ./a.exe < input.txt > output.txt && diff --color=always output.txt 
 #include <bits/stdc++.h>
 using namespace std;
 
+#define FAST_IO ios::sync_with_stdio(false); cin.tie(nullptr)
+
 // loop
 #define FOR(i, x, n) for(int (i)=(x); (i)<(n); (i)++)
 #define rFOR(i, x, n) for(int (i)=(x); (i)>=(n); (i)--)  // eg: x=n-1, x=0
@@ -15,8 +17,8 @@ using namespace std;
 #define srt(v) sort((v).begin(), (v).end())
 #define srtR(v) sort(v.rbegin(), v.rend())
 
-#define Left(p)     ((p)<<1)+1
-#define Right(p)    ((p)<<1)+2
+#define Left(p)     (p<<1)+1
+#define Right(p)    (p<<1)+2
 
 typedef long long ll;
 typedef unsigned long long ull;
@@ -44,80 +46,80 @@ const int PrimeSize = 100001;
 //     return (a.second - a.first)> (b.second - b.first);
 // }
 
-class segmentTreeSum {
-    vl sum;
-    int size;
+bool cmp(const pii &a, const pii &b){
+    return a.first < b.first;
+}
 
-    void build(int p, int L, int R, vl& a){
-        if(L == R){
-            if(L < (int)a.size()) sum[p] = a[L]; 
-            return;
+/*
+long long sieve_size;
+bitset<10000010> bs;                     // 10^7 limit
+vector<long long> prime;
+
+void sieve(long long upperbound) {
+    sieve_size = upperbound + 1;
+    bs.set();
+    bs[0] = bs[1] = 0;
+
+    for(long long i=2; i<sieve_size; i++) {
+        if(bs[i]) {
+            for(long long j=i*i; j<sieve_size; j+=i) bs[j] = 0;
+            prime.push_back(i);
         }
-
-        int mid = L + ((R-L)>>1);
-        build(Left(p), L, mid, a);
-        build(Right(p), mid+1, R, a);
-
-        sum[p] = sum[Left(p)] + sum[Right(p)];
     }
+}
+*/
 
-    void set(int p, int L, int R, int ind, int v){
-        if(L == R) {sum[p] += v; return;}
+double fact(double x) {
+	double ans = 1;
+	for(int i=1; i<=(int)x; i++) ans *= (double)i;
+	return ans;
+}
 
-        int mid = L + ((R-L)>>1);
-        if(ind <= mid) set(Left(p), L, mid, ind, v);
-        else set(Right(p), mid+1, R, ind, v);
-
-        sum[p] = sum[Left(p)] + sum[Right(p)];
-    }
-
-    long long rangeSum(int p, int L, int R, int l, int r){
-        if(L>=l && R<=r) return sum[p];      
-        if(R < l || L > r) return 0;    
-
-        int mid = L + ((R-L)>>1);
-
-        return rangeSum(Left(p), L, mid, l, r) + rangeSum(Right(p), mid+1, R, l, r);
-    }
-
-public:
-    segmentTreeSum(int n){
-        size = 1;
-        while(size < n) size *= 2;
-        sum.assign(2*size, 0LL);
-    }
-
-    segmentTreeSum(vl& a) : segmentTreeSum((int)a.size()) {
-        build(0, 0, size-1, a);
-    }
-
-    void set(int ind, int v){ set(0, 0, size-1, ind, v); }
-    long long rangeSum(int l, int r){ return rangeSum(0, 0, size-1, l, r);}
-};
-
-
-void solve(){
-	int n, m;
-    cin >> n;
-    vl a(n);
-    for(ll &i: a) cin >> i;
-
-    segmentTreeSum st(n);
-
-    for(int i=0; i<n; i++) {
-        cout << st.rangeSum(0, n-1) - st.rangeSum(0, a[i]-1) << " ";
-        st.set(a[i]-1, 1);
-    }
-    cout << "\n";
-    
+void solve() {
+    int m, s;
+	cin >> m >> s;
+	
+	if(m == 1 && s == 0) {
+		cout << "0 0" << endl;
+		return;
+	}
+	
+	if(!(s > 0 && s <= 9 * m)) {
+		cout << -1 << " " << -1 << endl;
+		return;
+	}
+	
+	string maxN(m, '0'), minN(m, '0');
+	int idx = 0;
+	while(s > 0) {
+		maxN[idx++] = '0' + min(9, s);
+		s -= min(9, s);
+	}
+	
+	minN = maxN;
+	reverse(minN.begin(), minN.end());
+	
+	if(minN[0] == '0') {
+		minN[0] = '1';
+		
+		for(int i=1; i<m; i++){
+			if(minN[i] != '0'){
+				minN[i]--;
+				break;
+			}
+		}
+	}
+	
+	cout << minN << " " << maxN << endl;
+	
 }
 
 int main(){
-	ios::sync_with_stdio(0);
+	FAST_IO;
     ll t;
 
     t = 1;
-    // cin >> t;
+    //cin >> t;
     while(t--)
         solve();
 }
