@@ -363,3 +363,77 @@ struct SuffixArray {
         }
     }
 };
+
+
+struct Node {
+    int next[26]; // Trie transitions (edges)
+    int len;      // Length of the palindrome
+    int link;     // Suffix link
+    long long cnt; // Frequency of this palindrome
+
+    Node() {
+        fill(begin(next), end(next), 0);
+        len = 0;
+        link = 0;
+        cnt = 0;
+    }
+};
+
+struct Eertree {
+    vector<Node> tree;
+    string s;
+    int sz;   
+    int last;
+
+    Eertree(int max_len) {
+        tree.resize(max_len + 2);
+        
+        tree[0].len = 0;
+        tree[0].link = 1;
+        
+        tree[1].len = -1;
+        tree[1].link = 1;
+        
+        sz = 2;
+        last = 0;
+    }
+
+    int get_link(int u) {
+        int pos = s.length() - 1;
+        while (pos - 1 - tree[u].len < 0 || s[pos - 1 - tree[u].len] != s[pos]) 
+            u = tree[u].link;
+        
+        return u;
+    }
+
+    void add_letter(char c) {
+        s += c;
+        int curr = get_link(last);
+        int c_idx = c - 'a';
+
+        if (!tree[curr].next[c_idx]) {
+            int new_node = sz++;
+            tree[new_node].len = tree[curr].len + 2;
+
+            if (tree[new_node].len == 1) tree[new_node].link = 0;
+            else {
+                int fail = get_link(tree[curr].link);
+                tree[new_node].link = tree[fail].next[c_idx];
+            }
+            tree[curr].next[c_idx] = new_node;
+        }
+
+        last = tree[curr].next[c_idx];
+        tree[last].cnt++;
+    }
+
+    void count_occurrences() {
+        for (int i = sz - 1; i >= 2; i--)
+            tree[tree[i].link].cnt += tree[i].cnt;
+        
+    }
+
+    int get_distinct_count() {
+        return sz - 2;
+    }
+};
