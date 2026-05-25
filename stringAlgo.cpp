@@ -95,3 +95,214 @@ vector<int> rabin_karp(string const& pattern, string const& text) {
     }
     return occurrences;
 }
+
+// Manacher's algorithm for longest palindromic substring in O(n) time
+// Returns an array p where p[i] is the palindrome radius at index i
+// in the modified string.
+vector<int> manacher(const string& s) {
+    if (s.empty()) return {};
+    string t = "^#";
+    for (char c : s) { t += c; t += '#'; }
+    t += "$";
+
+    int n = t.length();
+    vector<int> p(n, 0);
+    int center = 0, right = 0;
+
+    for (int i = 1; i < n - 1; i++) {
+        int i_mirror = 2 * center - i;
+
+        if (right > i) p[i] = min(right - i, p[i_mirror]);
+
+        while (t[i + 1 + p[i]] == t[i - 1 - p[i]]) p[i]++;
+        if (i + p[i] > right) {
+            center = i;
+            right = i + p[i];
+        }
+    }
+    
+    return p;
+}
+
+/*
+    Trie (Prefix Tree) for efficient string storage and retrieval
+*/
+struct TrieNode {
+    int next[26];
+    bool is_end_of_string;
+    int count;
+
+    TrieNode() {
+        fill(begin(next), end(next), -1);
+        is_end_of_string = false;
+        count = 0;
+    }
+};
+
+struct Trie {
+    vector<TrieNode> tree;
+
+    Trie() {
+        tree.emplace_back();
+    }
+
+    void insert(const string& s) {
+        int curr = 0;
+        for (char c : s) {
+            int index = c - 'a';
+            if (tree[curr].next[index] == -1) {
+                tree[curr].next[index] = tree.size();
+                tree.emplace_back();
+            }
+            curr = tree[curr].next[index];
+            tree[curr].count++;
+        }
+        tree[curr].is_end_of_string = true;
+    }
+
+    bool search(const string& s) {
+        int curr = 0;
+        for (char c : s) {
+            int index = c - 'a';
+            if (tree[curr].next[index] == -1) return false;
+            curr = tree[curr].next[index];
+        }
+        return tree[curr].is_end_of_string;
+    }
+};
+
+/*
+    Bitwise Trie for efficient XOR queries
+*/
+struct BitTrieNode {
+    int next[2];
+    BitTrieNode() { next[0] = next[1] = -1; }
+};
+
+struct BitTrie {
+    vector<BitTrieNode> tree;
+    const int MAX_BITS = 31; // For 32-bit signed integers
+
+    BitTrie() {
+        tree.emplace_back();
+    }
+
+    void insert(int num) {
+        int curr = 0;
+        for (int i = MAX_BITS; i >= 0; --i) {
+            int bit = (num >> i) & 1;
+            if (tree[curr].next[bit] == -1) {
+                tree[curr].next[bit] = tree.size();
+                tree.emplace_back();
+            }
+            curr = tree[curr].next[bit];
+        }
+    }
+
+    int get_max_xor(int num) {
+        int curr = 0, max_xor = 0;
+        for (int i = MAX_BITS; i >= 0; --i) {
+            int bit = (num >> i) & 1;
+            int opposite_bit = 1 - bit;
+            
+            if (tree[curr].next[opposite_bit] != -1) {
+                max_xor |= (1 << i);
+                curr = tree[curr].next[opposite_bit];
+            } else {
+                curr = tree[curr].next[bit];
+            }
+        }
+        return max_xor;
+    }
+};
+
+
+/*
+    Aho-Corasick Automaton
+    
+*/
+struct ACNode {
+    int next[26];
+    int link;      // Suffix link
+    int dict_link; // Link to nearest terminal node (exit link)
+    vector<int> match_ids; // IDs of patterns ending here
+
+    ACNode() {
+        fill(begin(next), end(next), -1);
+        link = -1;
+        dict_link = -1;
+    }
+};
+
+struct AhoCorasick {
+    vector<ACNode> t;
+
+    AhoCorasick() { t.emplace_back(); }
+
+    void insert(const string& s, int pattern_id) {
+        int curr = 0;
+        for (char c : s) {
+            int idx = c - 'a';
+            if (t[curr].next[idx] == -1) {
+                t[curr].next[idx] = t.size();
+                t.emplace_back();
+            }
+            curr = t[curr].next[idx];
+        }
+        t[curr].match_ids.push_back(pattern_id);
+    }
+
+    void build_automaton() {
+        queue<int> q;
+        t[0].link = 0;
+        t[0].dict_link = 0;
+
+        for (int c = 0; c < 26; ++c) {
+            int child = t[0].next[c];
+            if (child != -1) {
+                t[child].link = 0;
+                t[child].dict_link = (t[child].match_ids.empty() ? 0 : child);
+                q.push(child);
+            } else {
+                t[0].next[c] = 0; 
+            }
+        }
+
+        // BFS to set suffix and dictionary links
+        while (!q.empty()) {
+            int u = q.front();
+            q.pop();
+
+            for (int c = 0; c < 26; ++c) {
+                int child = t[u].next[c];
+                if (child != -1) {
+                    int fail = t[u].link;
+                    t[child].link = t[fail].next[c];
+
+                    int l = t[child].link;
+                    t[child].dict_link = t[l].match_ids.empty() ? t[l].dict_link : l;
+                    
+                    q.push(child);
+                } else {
+                    t[u].next[c] = t[t[u].link].next[c];
+                }
+            }
+        }
+    }
+
+    // Example usage: Count total occurrences of all dictionary words
+    long long count_matches(const string& text) {
+        long long matches = 0;
+        int curr = 0;
+        for (char c : text) {
+            curr = t[curr].next[c - 'a'];
+            
+            int temp = t[curr].match_ids.empty() ? t[curr].dict_link : curr;
+            while (temp != 0) {
+                matches += t[temp].match_ids.size();
+                temp = t[temp].dict_link;
+            }
+        }
+        return matches;
+    }
+};
