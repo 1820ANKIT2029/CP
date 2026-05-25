@@ -75,6 +75,33 @@ public:
     }
 };
 
+template <typename T>
+struct SparseTable {
+    int n, max_log;
+    vector<vector<T>> st;
+    
+    // CHANGE THIS: to max, gcd, etc.
+    T merge(const T& a, const T& b) { return min(a, b); }
+
+    SparseTable(const vector<T>& arr) {
+        n = arr.size();
+        max_log = 32 - __builtin_clz(n);
+        st.assign(max_log, vector<T>(n));
+        for (int i = 0; i < n; i++) st[0][i] = arr[i];
+        
+        for (int j = 1; j < max_log; j++) {
+            for (int i = 0; i + (1 << j) <= n; i++) {
+                st[j][i] = merge(st[j - 1][i], st[j - 1][i + (1 << (j - 1))]);
+            }
+        }
+    }
+
+    T query(int L, int R) { // 0-indexed, inclusive [L, R]
+        int j = 31 - __builtin_clz(R - L + 1);
+        return merge(st[j][L], st[j][R - (1 << j) + 1]);
+    }
+};
+
 int main() {
     FAST_IO;
 
