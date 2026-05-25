@@ -1,6 +1,9 @@
 #include <bits/stdc++.h>
 using namespace std;
 
+typedef long long ll;
+typedef long double ld;
+
 int MOD = 1e9 + 7;
 
 long long GCD(long long a, long long b) {
@@ -30,6 +33,10 @@ long long power(int x, int n){
     ans *= ans; ans %= MOD;
     if(n % 2 != 0){ ans *= x; ans %= MOD;}
     return ans;
+}
+
+long long modInverse(long long n) {
+    return power(n, MOD - 2);
 }
 
 long long fact(int n){
@@ -73,8 +80,46 @@ long long nPr(int n, int r) {
     return (nume * power(deno, MOD-2)) % MOD;
 }
 
-long long modInverse(long long n) {
-    return power(n, MOD - 2);
+// FACTORIAL + nCr + nPr
+ll fact[MAX + 1];
+ll invFact[MAX + 1];
+
+void precomputeFactorial() {
+    fact[0] = 1;
+
+    for (int i = 1; i <= MAX; i++) fact[i] = (fact[i - 1] * i) % MOD;
+    invFact[MAX] = modInverse(fact[MAX]);
+    for (int i = MAX - 1; i >= 0; i--) invFact[i] = (invFact[i + 1] * (i + 1)) % MOD;
+}
+
+ll nCr(ll n, ll r) {
+    if (r < 0 || r > n) return 0;
+
+    return (((fact[n] * invFact[r]) % MOD) * invFact[n - r]) % MOD;
+}
+
+ll nPr(ll n, ll r) {
+    if (r < 0 || r > n) return 0;
+
+    return (fact[n] * invFact[n - r]) % MOD;
+}
+
+// Pascal's Triangle
+const int N = 1000;
+ll C[N + 1][N + 1]; // C[n][r] = nCr(n, r)
+
+void buildPascal() {
+    for (int n = 0; n <= N; n++) {
+        C[n][0] = C[n][n] = 1;
+
+        for (int r = 1; r < n; r++)
+            C[n][r] = (C[n - 1][r - 1] + C[n - 1][r]) % MOD;
+    }
+}
+
+// Catalan Number = (2n)! / ((n + 1)! * n!) = nCr(2n, n) / (n + 1)
+ll catalan(int n) {
+    return (nCr(2 * n, n) * modInverse(n + 1)) % MOD;
 }
 
 /*
@@ -247,4 +292,143 @@ long long count_primes_in_range(long long L, long long R) {
 
     return prime_count;
 }
+
+// Derangement: number of permutations of n elements with no fixed points
+ll derangement(int n) {
+    vector<ll> der(n + 1); der[0] = 1;
+
+    if (n >= 1) der[1] = 0;
+
+    for (int i = 2; i <= n; i++) 
+        der[i] = ((i - 1) * (der[i - 1] + der[i - 2])) % MOD;
+
+    return der[n];
+}
+
+// Stars and Bars: distribute n identical items into k groups
+ll starsAndBarsEmpty(int n, int k) {
+    return nCr(n + k - 1, k - 1);
+}
+
+ll starsAndBarsNonEmpty(int n, int k) {
+    if (n < k) return 0;
+    return nCr(n - 1, k - 1);
+}
+
+// Inclusion-Exclusion Principle
+// Count numbers from 1 to n that are divisible by at least one of the given integers in array a
+ll inclusionExclusion(vector<int>& a, int n) {
+    int m = a.size();
+
+    ll ans = 0;
+    for (int mask = 1; mask < (1 << m); mask++) {
+        ll lcmValue = 1;
+        int bits = 0;
+        bool overflow = false;
+
+        for (int i = 0; i < m; i++) {
+            if (mask & (1 << i)) {
+                bits++;
+                lcmValue = LCM(lcmValue, (ll)a[i]);
+
+                if (lcmValue > n) { overflow = true; break; }
+            }
+        }
+
+        if (overflow) continue;
+
+        ll cnt = n / lcmValue;
+        if (bits & 1) ans += cnt;
+        else ans -= cnt;
+    }
+
+    return ans;
+}
+
+// Burnside's Lemma: count distinct objects under group actions
+// distinct necklaces example: n beads, k colors, rotations only
+ll burnsideNecklace(int n, int k) {
+    ll sum = 0;
+
+    for (int rot = 0; rot < n; rot++) {
+        int cycles = GCD(rot, n);
+        sum += power(k, cycles);
+    }
+
+    return sum / n;
+}
+
+// Expected Value and Variance
+ld expectedValue(vector<ld>& value, vector<ld>& prob) {
+    ld ans = 0;
+    for (int i = 0; i < value.size(); i++)
+        ans += value[i] * prob[i];
+
+    return ans;
+}
+
+ld variance(vector<ld>& value, vector<ld>& prob) {
+    ld EX = 0, EX2 = 0;
+    for (int i = 0; i < value.size(); i++) {
+        EX += value[i] * prob[i];
+        EX2 += value[i] * value[i] * prob[i];
+    }
+
+    return EX2 - EX * EX;
+}
+
+// Binomial Probability: P(X = k) = nCr(n, k) * p^k * (1-p)^(n-k)
+ld binomialProbability(int n, int k, ld p) {
+    ld comb = nCr(n, k);
+    return comb * pow(p, k) * pow(1 - p, n - k);
+}
+
+// geometric probability: P(X = k) = (1-p)^(k-1) * p
+// first success on kth trial
+ld geometricProbability(int k, ld p) {
+    return pow(1 - p, k - 1) * p;
+}
+
+ld poissonProbability(int k, ld lambda) {
+    return (pow(lambda, k) * exp(-lambda)) / fact[k];
+}
+
+// Matrix Exponentiation: A^n mod M
+struct Matrix {
+    int r, c;
+    const ll M = 1e9 + 7;
+    vector<vector<ll>> mat;
+
+    Matrix(int r, int c) : r(r), c(c), mat(r, vector<ll>(c, 0)) {}
+
+    static Matrix identity(int n) {
+        Matrix I(n, n);
+        for (int i = 0; i < n; i++) I.mat[i][i] = 1;
+        return I;
+    }
+
+    Matrix operator*(const Matrix& other) const {
+        Matrix res(r, other.c);
+        for (int i = 0; i < r; i++) {
+            for (int k = 0; k < c; k++) {
+                if (mat[i][k] == 0) continue;
+                for (int j = 0; j < other.c; j++) {
+                    res.mat[i][j] = (res.mat[i][j] + mat[i][k] * other.mat[k][j]) % M;
+                }
+            }
+        }
+        return res;
+    }
+
+    Matrix pow(ll exp) const {
+        Matrix base = *this;
+        Matrix res = identity(r);
+        while (exp > 0) {
+            if (exp & 1) res = res * base;
+            base = base * base;
+            exp >>= 2;
+        }
+        return res;
+    }
+};
 
