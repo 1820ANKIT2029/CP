@@ -743,9 +743,7 @@ public:
 };
 
 class segmentTreeRURQLazy {
-    /*
-        Segment Tree Range Update Range Query Lazy Propagation
-    */
+    // Segment Tree Range Update Range Query Lazy Propagation
 
     int size;
     vl operations, values;
@@ -807,27 +805,60 @@ class segmentTreeRURQLazy {
         return ans;
     }
 
-    // void build(int p, int L, int R){
-    //     if(L == R) {values[p] = 1; return;}
-
-    //     int mid = L + ((R-L)>>1);
-    //     build(Left(p), L, mid);
-    //     build(Right(p), mid+1, R);
-
-    //     values[p] = query_op(values[Left(p)], values[Right(p)]);
-    // }
-
 public:
     segmentTreeRURQLazy(int n){
         size = 1;
         while(size < n) size *= 2;
-        operations.assign(2 * size, 0LL);
+        operations.assign(2 * size, NO_OPERATION);
         values.assign(2 * size, 0LL);
-        // build(0, 0, size-1);
     }
 
     void modify(int l, int r, int v){modify(0, 0, size-1, l, r, v);}
     ll query(int l, int r){return query(0, 0, size-1, l, r);}
-
 };
+
+/* 
+    example usage of segmentTreeRURQLazy
+    1. Range Minimum Query + Range Assignment (Current Setup)
+        NEUTRAL_ELEMENT: LLONG_MAX
+        NO_OPERATION: LLONG_MAX - 1 (or any impossible assignment value)
+        query_op(a, b): return min(a, b);
+        modify_op(a, b): return b; (Assigns the new value, overwriting the old).
+    2. Range Maximum Query + Range Addition
+        NEUTRAL_ELEMENT: LLONG_MIN
+        NO_OPERATION: 0 (Adding 0 changes nothing)
+        query_op(a, b): return max(a, b);
+        modify_op(a, b): return a + b; (Adds the lazy value to the current max).
+    3. Range GCD Query + Range Assignment
+        NEUTRAL_ELEMENT: 0 (Since GCD(x, 0) = x)
+        NO_OPERATION: -1 (Assuming valid array elements are >= 0)
+        query_op(a, b): return gcd(a, b);
+        modify_op(a, b): return b;
+    4. Bitwise OR Query + Range Assignment
+        NEUTRAL_ELEMENT: 0 (Because X | 0 = X)
+        NO_OPERATION: -1 (Assuming array values are non-negative. If values can be negative, use a distinct flag like LLONG_MAX)
+        query_op(a, b): return a | b;
+        modify_op(a, b): return b; (Overwrites the existing bits)
+    5. Bitwise AND Query + Range Bitwise OR Update
+        NEUTRAL_ELEMENT: ~0LL or LLONG_MAX (All bits set to 1, because X & 1...1 = X)
+        NO_OPERATION: 0 (OR-ing with 0 changes nothing)
+        query_op(a, b): return a & b;
+        modify_op(a, b): return a | b; (Applies the new bits to the existing bits)
+    6. Range Sum Query + Range Addition (Requires Segment Length)
+        NEUTRAL_ELEMENT: 0
+        NO_OPERATION: 0
+        query_op(a, b): return a + b;
+        ll modify_op(ll a, ll b, ll len) {
+            if(b == NO_OPERATION) return a;
+            return a + (b * len); 
+        }
+        void apply_mod_op(ll &a, ll b, ll len){
+            a = modify_op(a, b, len);
+        }   
+    7. Range Sum Query + Range Assignment (Requires Segment Length)
+        NEUTRAL_ELEMENT: 0
+        NO_OPERATION: LLONG_MAX
+        query_op(a, b): return a + b;
+        modify_op(a, b, len): return b * len; (Completely ignores a and calculates the new sum)
+*/
 

@@ -19,6 +19,10 @@ using namespace std;
 
 #define Left(p)     (p<<1)+1
 #define Right(p)    (p<<1)+2
+#define all(x) (x).begin(), (x).end()
+#define rall(x) (x).rbegin(), (x).rend()
+#define F first
+#define S second
 
 typedef long long ll;
 typedef unsigned long long ull;
@@ -40,7 +44,6 @@ const double EPS = 1e-9;
 const int inx[] = {0, 1, -1, 0};
 const int iny[] = {1, 0, 0, -1};
 const vector<string> stepDir = {"R","D","U","L"};
-const int PrimeSize = 100001;
 
 // bool cmp(pll &a, pll &b){
 //     return (a.second - a.first)> (b.second - b.first);
@@ -50,68 +53,81 @@ bool cmp(const pii &a, const pii &b){
     return a.first < b.first;
 }
 
-/*
-long long sieve_size;
-bitset<10000010> bs;                     // 10^7 limit
-vector<long long> prime;
+// Segment Tree Range Update Range Query Lazy Propagation
+class segmentTreeRURQLazy {
+    int size;
+    vl operations, values;
+    ll NEUTRAL_ELEMENT = LLONG_MAX;
+    ll NO_OPERATION = LLONG_MAX - 1;
 
-void sieve(long long upperbound) {
-    sieve_size = upperbound + 1;
-    bs.set();
-    bs[0] = bs[1] = 0;
-
-    for(long long i=2; i<sieve_size; i++) {
-        if(bs[i]) {
-            for(long long j=i*i; j<sieve_size; j+=i) bs[j] = 0;
-            prime.push_back(i);
-        }
+    ll modify_op(ll a, ll b){
+        if(b == NO_OPERATION) return a;
+        return b;
     }
-}
-*/
 
-double fact(double x) {
-	double ans = 1;
-	for(int i=1; i<=(int)x; i++) ans *= (double)i;
-	return ans;
-}
+    ll query_op(ll a, ll b){
+        return min(a, b);
+	}
+
+    void apply_mod_op(ll &a, ll b){
+        a = modify_op(a, b);
+    }
+
+    void propagate(int p, int L, int R){
+        if(L == R) return;
+
+        int mid = L +  ((R-L)>>1);
+        apply_mod_op(operations[Left(p)], operations[p]);
+        apply_mod_op(values[Left(p)], operations[p]);
+        apply_mod_op(operations[Right(p)], operations[p]);
+        apply_mod_op(values[Right(p)], operations[p]);
+        operations[p] = NO_OPERATION;
+    }
+
+    void modify(int p, int L, int R, int l, int r, int val){
+        propagate(p, L, R);
+        if(L > r || R < l) return;
+        if(L >= l && R<=r){
+            apply_mod_op(operations[p], val);
+            apply_mod_op(values[p], val);
+            return;
+        }
+
+        int mid = L + ((R-L)>>1);
+        modify(Left(p), L, mid, l, r, val);
+        modify(Right(p), mid+1, R, l, r, val);
+
+        values[p] = query_op(values[Left(p)], values[Right(p)]);
+        apply_mod_op(values[p], operations[p]);
+    }
+
+    ll query(int p, int L, int R, int l, int r){
+        propagate(p, L, R);
+        if(L > r || R < l) return NEUTRAL_ELEMENT;
+        if(L >= l && R<=r) return values[p];
+
+        int mid = L + ((R-L)>>1);
+        ll a = query(Left(p), L, mid, l, r);
+        ll b = query(Right(p), mid+1, R, l, r);
+        ll ans = query_op(a, b);
+        apply_mod_op(ans, operations[p]);
+        return ans;
+    }
+
+public:
+    segmentTreeRURQLazy(int n){
+        size = 1;
+        while(size < n) size *= 2;
+        operations.assign(2 * size, NO_OPERATION);
+        values.assign(2 * size, 0LL);
+    }
+
+    void modify(int l, int r, int v){ modify(0, 0, size-1, l, r, v); }
+    ll query(int l, int r){ return query(0, 0, size-1, l, r); }
+};
 
 void solve() {
-    int m, s;
-	cin >> m >> s;
-	
-	if(m == 1 && s == 0) {
-		cout << "0 0" << endl;
-		return;
-	}
-	
-	if(!(s > 0 && s <= 9 * m)) {
-		cout << -1 << " " << -1 << endl;
-		return;
-	}
-	
-	string maxN(m, '0'), minN(m, '0');
-	int idx = 0;
-	while(s > 0) {
-		maxN[idx++] = '0' + min(9, s);
-		s -= min(9, s);
-	}
-	
-	minN = maxN;
-	reverse(minN.begin(), minN.end());
-	
-	if(minN[0] == '0') {
-		minN[0] = '1';
-		
-		for(int i=1; i<m; i++){
-			if(minN[i] != '0'){
-				minN[i]--;
-				break;
-			}
-		}
-	}
-	
-	cout << minN << " " << maxN << endl;
-	
+    
 }
 
 int main(){
