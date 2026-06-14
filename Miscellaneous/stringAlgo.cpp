@@ -87,6 +87,36 @@ int main() {
     return 0;
 }
 
+class PalindromeHash {
+private:
+    DoubleHash forward_hasher;
+    DoubleHash reverse_hasher;
+    int n;
+
+public:
+    PalindromeHash(const string& s) 
+        : forward_hasher(s), 
+          reverse_hasher(string(s.rbegin(), s.rend())), // Inline string reversal
+          n(s.length()) {}
+
+    bool is_palindrome(int L, int R) {
+        int rev_L = n - 1 - R;
+        int rev_R = n - 1 - L;
+        return forward_hasher.get_hash(L, R) == reverse_hasher.get_hash(rev_L, rev_R);
+    }
+};
+
+int main() {
+    string text = "abacabad";
+    PalindromeHash checker(text);
+
+    if (checker.is_palindrome(1, 5)) cout << "Substring text[1...5] ('bacab') IS a palindrome.\n";
+    else cout << "Substring text[1...5] ('bacab') is NOT a palindrome.\n";
+
+    if (checker.is_palindrome(3, 7)) cout << "Substring text[3...7] ('cabad') IS a palindrome.\n";
+    else cout << "Substring text[3...7] ('cabad') is NOT a palindrome.\n";
+}
+
 /*
     String Pattern Matching Algorithms:
     1. Knuth-Morris-Pratt (KMP) Algorithm O(n + m)
