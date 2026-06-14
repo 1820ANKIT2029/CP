@@ -1,6 +1,80 @@
 #include <bits/stdc++.h>
-
 using namespace std;
+
+/*
+    Hashing: Polynomial Hash, Rolling Hash, Double Hashing
+    
+    1. Polynomial Hash Formula (String S of length L)
+    - H(S) = (S[0] * p^(L-1) + S[1] * p^(L-2) + ... + S[L-1] * p^0) % m
+    - (p = prime base like 31, m = large prime modulus like 1e9+7)
+    
+    2. Rolling Hash Formula for Substring S[L...R]
+    - H(L, R) = (Pref[R+1] - Pref[L] * p^(R-L+1)) % m
+    - Note: To handle C++ negative modulo, use: H = (H % m + m) % m
+    
+    3. Double Hashing Formula/Condition
+    - Compute H1 using (p1, m1) and H2 using (p2, m2)
+    - S1 == S2 is True iff: (H1_S1 == H1_S2) && (H2_S1 == H2_S2)
+*/
+class DoubleHash {
+private:
+    // Two distinct pairs of primes and moduli
+    long long p1 = 31, m1 = 1e9 + 7;
+    long long p2 = 37, m2 = 1e9 + 9;
+    
+    vector<long long> pref1, pref2;
+    vector<long long> pow1, pow2;
+
+public:
+    DoubleHash(const string& s) {
+        int n = s.size();
+        pref1.assign(n + 1, 0); pref2.assign(n + 1, 0);
+        pow1.assign(n + 1, 1);  pow2.assign(n + 1, 1);
+
+        for (int i = 0; i < n; i++) {
+            // Precompute the powers of our bases
+            pow1[i + 1] = (pow1[i] * p1) % m1;
+            pow2[i + 1] = (pow2[i] * p2) % m2;
+
+            // Precompute the polynomial prefix hashes
+            // H[i+1] = (H[i] * p + char_value) % m
+            long long val = s[i] - 'a' + 1; // 1-indexed so 'a' isn't 0
+            
+            pref1[i + 1] = (pref1[i] * p1 + val) % m1;
+            pref2[i + 1] = (pref2[i] * p2 + val) % m2;
+        }
+    }
+
+    // O(1) Substring Hash Retrieval
+    pair<long long, long long> get_hash(int L, int R) {
+        long long len = R - L + 1;
+        
+        // H(L, R) = (Pref[R+1] - Pref[L] * p^(R-L+1)) % m
+        long long h1 = (pref1[R + 1] - (pref1[L] * pow1[len]) % m1) % m1;
+        // In C++, the modulo of a negative number is negative. We fix that:
+        if (h1 < 0) h1 += m1; 
+
+        long long h2 = (pref2[R + 1] - (pref2[L] * pow2[len]) % m2) % m2;
+        if (h2 < 0) h2 += m2;
+
+        return {h1, h2};
+    }
+};
+
+int main() {
+    string text = "abcbabc";
+    DoubleHash hasher(text);
+
+    // Get hashes for the two "abc" substrings
+    pair<long long, long long> hash_left = hasher.get_hash(0, 2);  // "abc"
+    pair<long long, long long> hash_right = hasher.get_hash(4, 6); // "abc"
+    
+    if (hash_left == hash_right) {
+        cout << "Substrings match perfectly in O(1) time!\n";
+    }
+
+    return 0;
+}
 
 /*
     String Pattern Matching Algorithms:
