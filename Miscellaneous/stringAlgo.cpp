@@ -47,6 +47,7 @@ public:
 
     // O(1) Substring Hash Retrieval
     pair<long long, long long> get_hash(int L, int R) {
+        if (L > R) return {0, 0};
         long long len = R - L + 1;
         
         // H(L, R) = (Pref[R+1] - Pref[L] * p^(R-L+1)) % m
@@ -57,6 +58,16 @@ public:
         long long h2 = (pref2[R + 1] - (pref2[L] * pow2[len]) % m2) % m2;
         if (h2 < 0) h2 += m2;
 
+        return {h1, h2};
+    }
+
+    pair<long long, long long> combine(
+        pair<long long, long long> left_hash, 
+        pair<long long, long long> right_hash, 
+        int right_len
+    ){                              
+        long long h1 = (left_hash.first * pow1[right_len] + right_hash.first) % m1;
+        long long h2 = (left_hash.second * pow2[right_len] + right_hash.second) % m2;
         return {h1, h2};
     }
 };
