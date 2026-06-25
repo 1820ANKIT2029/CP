@@ -316,3 +316,120 @@ void runtarjanSCC(){
 		if (dfs_num[u] == UNVISITED)
 			tarjanSCC(u);
 }
+
+
+/*
+	Multi-source BFS
+	Time Complexity: O(V + E)
+	Space Complexity: O(V)
+*/
+
+vector<int> multiSourceBFS(int V, vector<vector<int>>& AL, vector<int>& sources) {
+    vector<int> dist(V, -1);
+    queue<int> q;
+
+    // Push all sources and mark distance as 0
+    for (int src : sources) {
+        q.push(src); dist[src] = 0;
+    }
+    while (!q.empty()) {
+        int u = q.front(); q.pop();
+
+        for (int v : AL[u]) {
+            if (dist[v] == -1) {
+                dist[v] = dist[u] + 1;
+                q.push(v);
+            }
+        }
+    }
+
+    return dist;
+}
+
+/*
+	0-1 BFS
+	use: Graphs where transitions cost either nothing (e.g., moving freely within a component) 
+		or a fixed unit (e.g., breaking a wall, changing a direction)
+
+	Time Complexity: O(V + E)
+	Space Complexity: O(V)
+*/
+
+vector<int> zeroOneBFS(int V, int start, vector<vector<pair<int, int>>>& AL) {
+    vector<int> dist(V, INT_MAX);
+    deque<int> dq;
+
+    dq.push_front(start);
+    dist[start] = 0;
+
+    while (!dq.empty()) {
+        int u = dq.front(); dq.pop_front();
+
+        for (auto& [v, w] : AL[u]) {
+            // Relaxation step
+            if (dist[u] + w < dist[v]) {
+                dist[v] = dist[u] + w;
+                
+                // 0-weight edges to the front, 1-weight edges to the back
+                if (w == 0) dq.push_front(v);
+                else dq.push_back(v);
+            }
+        }
+    }
+
+    return dist;
+}
+
+/*
+	Bidirectional BFS
+	use: Point-to-point shortest path queries in huge search spaces
+		(e.g., Rubik's cube states, social network connections like "degrees of separation")
+	
+	Time Complexity: O(b^(d/2))
+	Space Complexity: O(b^(d/2))
+*/
+vector<vector<int>>& AL;
+
+// function to process one layer of the BFS
+bool processLevel(queue<int>& q, vector<int>& my_visited, vector<int>& other_visited) {
+    int size = q.size();
+    while (size--) {
+        int u = q.front(); q.pop();
+
+        for (int v : AL[u]) {
+            if (!my_visited[v]) {
+                my_visited[v] = my_visited[u] + 1;
+                q.push(v);
+            }
+            
+            if (other_visited[v]) return true; 
+        }
+    }
+    return false;
+}
+
+int bidirectionalBFS(int V, int start, int target) {
+    if (start == target) return 0;
+
+    vector<int> dist_start(V, 0), dist_target(V, 0);
+    queue<int> q_start, q_target;
+
+    q_start.push(start);
+    dist_start[start] = 1; 
+
+    q_target.push(target);
+    dist_target[target] = 1;
+
+    int total_distance = 0;
+    while (!q_start.empty() && !q_target.empty()) {
+        total_distance++;
+        if (processLevel(q_start, dist_start, dist_target))
+            return total_distance;
+        
+        total_distance++;
+        if (processLevel(q_target, dist_target, dist_start))
+            return total_distance;
+    }
+
+    return -1;
+}
