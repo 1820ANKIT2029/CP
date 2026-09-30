@@ -642,7 +642,7 @@ class _1745 {
 	}
 };
 
-class _1097 {
+class _1097 { Interval DP
 	public:
 	int n;
 	vector<ll> x;
@@ -680,7 +680,7 @@ class _1097 {
 	}
 };
 
-class _1093 {
+class _1093 { // two sets of equal sum
 	public:
 	int n;
 	ll a, b;
@@ -798,7 +798,7 @@ class _3314 {  // dp + monotonic stack (next larger number)
 	}
 };
 
-class _1145 {
+class _1145 { // LIS
 	public:
 	int n;
 	vector<int> nums;
