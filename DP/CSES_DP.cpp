@@ -11,7 +11,7 @@ typedef pair<int, pii> pipii;
 
 const ll MOD = 1e9 + 7;
 
-class _1633 {
+class _1633 { // coin change type
 	public:
 	int n;
 	vector<int> dp;
@@ -52,7 +52,7 @@ class _1633 {
 	}
 };
 
-class _1634 {
+class _1634 { // coin change
 	public:
 	int n, x;
 	vector<int> c;
@@ -99,7 +99,7 @@ class _1634 {
 	}
 };
 
-class _1635 {
+class _1635 { // coin change
 	public:
 	int n, x;
 	vector<int> c;
@@ -145,7 +145,7 @@ class _1635 {
 	}
 };
 
-class _1636 {
+class _1636 { // coin change
 	public:
 	int n, x;
 	vector<int> c;
@@ -211,7 +211,7 @@ class _1636 {
 	}
 };
 
-class _1637 {
+class _1637 { // subtruct Digits from num to make zero
 	public:
 	int n;
 	vector<ll> dp;
@@ -257,7 +257,7 @@ class _1637 {
 	}
 };
 
-class _1638 {
+class _1638 { // path count in 2d grid with trap
 	public:
 	int n;
 	vector<string> grid;
@@ -311,7 +311,7 @@ class _1638 {
 	}
 };
 
-class _1158 {
+class _1158 { // knapsack 1/0
 	public:
 	int n, x;
 	vector<int> h, s;
@@ -361,7 +361,7 @@ class _1158 {
 	}
 };
 
-class _1746 {
+class _1746 { // Prefix DP
 	public:
 	int n, m;
 	vector<int> x;
@@ -405,7 +405,7 @@ class _1746 {
 	}
 };
 
-class _2413 {
+class _2413 { // Counting Towers 
 	public:
 	int t, n;
 	vector<ll> dp[2]; 
@@ -559,7 +559,7 @@ class _3403 { // LIS
 	}
 };
 
-class _1744 {
+class _1744 { // Rectangle Cutting 
 	public:
 	int n, m;
 	vector<vector<int>> dp;
